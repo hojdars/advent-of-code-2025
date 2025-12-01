@@ -25,17 +25,15 @@ func PartTwo(rotation int, position int) (result int) {
 		distance = position
 	}
 
-	hundreds := float64(rotation / 100)
-	sanitized := int(math.Abs(float64(rotation - (int(hundreds) * 100))))
+	hundreds := float64(rotation-(rotation%100)) / 100.0
+	sanitized := int(math.Abs(float64(rotation % 100)))
 
-	// first crossing check is '(rotation > distance)'
+	// first crossing check is '(sanitized rotation > distance)', unless the dial stops at 0
 	if distance > 0 && sanitized != distance && sanitized > distance {
 		result += 1
 	}
 	// then add '(rotation div 100)' for every full rotation
-	if int(math.Abs(hundreds)) > 0 {
-		result += int(math.Abs(hundreds))
-	}
+	result += int(math.Abs(hundreds))
 
 	return
 }
@@ -49,8 +47,11 @@ func (res *Result) ApplyRotation(rotation int) {
 	if res.Position >= 100 {
 		res.Position = res.Position % 100
 	} else if res.Position < 0 {
-		hundreds := math.Ceil(math.Abs(float64(res.Position) / 100.0))
-		res.Position += 100 * int(hundreds)
+		remainder := res.Position % 100
+		if remainder != 0 {
+			remainder += 100
+		}
+		res.Position = remainder
 	}
 
 	// check actual position
