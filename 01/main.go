@@ -49,8 +49,8 @@ func (res *Result) ApplyRotation(rotation int) {
 	if res.Position >= 100 {
 		res.Position = res.Position % 100
 	} else if res.Position < 0 {
-		m := math.Ceil(math.Abs(float64(res.Position) / 100.0))
-		res.Position += 100 * int(m)
+		hundreds := math.Ceil(math.Abs(float64(res.Position) / 100.0))
+		res.Position += 100 * int(hundreds)
 	}
 
 	// check actual position
@@ -60,11 +60,11 @@ func (res *Result) ApplyRotation(rotation int) {
 
 	// sanity check
 	if res.Position < 0 {
-		fmt.Printf("error, %d < 0", res.Position)
+		fmt.Printf("error: %d < 0", res.Position)
 		os.Exit(1)
 	}
 	if res.Position > 100 {
-		fmt.Printf("error, %d > 100", res.Position)
+		fmt.Printf("error: %d > 100", res.Position)
 		os.Exit(1)
 	}
 }
@@ -74,12 +74,12 @@ func ParseLine(line string) int {
 	if line[0] == 'L' {
 		mult = -1
 	}
-	num, err := strconv.Atoi(line[1:])
+	number, err := strconv.Atoi(line[1:])
 	if err != nil {
 		fmt.Printf("error: cannot parse %s", line)
 		os.Exit(1)
 	}
-	return mult * num
+	return mult * number
 }
 
 func Run(scanner *bufio.Scanner) (int, int) {
@@ -103,7 +103,8 @@ func main() {
 	if len(os.Args) == 2 {
 		file, err := os.Open(os.Args[1])
 		if err != nil {
-			fmt.Println("error opening file")
+			fmt.Printf("error opening file=%s, err=%s\n", os.Args[1], err)
+			os.Exit(1)
 		}
 		defer file.Close()
 
@@ -119,5 +120,4 @@ func main() {
 		fmt.Println(Run(scanner))
 		os.Exit(0)
 	}
-
 }
