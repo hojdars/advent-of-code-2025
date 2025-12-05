@@ -7,14 +7,7 @@ import (
 	"strconv"
 )
 
-func AtoiError(number string) int {
-	first, err := strconv.Atoi(number)
-	if err != nil {
-		fmt.Printf("couldn't parse string=%s to number", number)
-		os.Exit(1)
-	}
-	return first
-}
+const batteryPackLength = 12
 
 func SolvePartOne(batteryPack string) int {
 	if len(batteryPack) < 2 {
@@ -35,16 +28,54 @@ func SolvePartOne(batteryPack string) int {
 		}
 	}
 
-	return int(10*tens + ones)
+	return 10*tens + ones
+}
+
+func swap(selection []byte, incoming byte, position int) []byte {
+	if incoming >= selection[position] {
+		backup := selection[position]
+		selection[position] = incoming
+		if position+1 < batteryPackLength {
+			return swap(selection, backup, position+1)
+		} else {
+			return selection
+		}
+	}
+
+	// no swap = no change
+	return selection
+}
+
+func SolvePartTwo(batteryPack string) int {
+	if len(batteryPack) < batteryPackLength {
+		fmt.Printf("error: battery pack length < %d, len=%d", batteryPackLength, len(batteryPack))
+		os.Exit(1)
+	}
+
+	selection := []byte(batteryPack[len(batteryPack)-batteryPackLength:])
+
+	for i := len(batteryPack) - 13; i >= 0; i-- {
+		selection = swap([]byte(selection), batteryPack[i], 0)
+	}
+
+	intRes, err := strconv.Atoi(string(selection))
+	if err != nil {
+		fmt.Printf("cannot parse result to string, got=%s", string(selection))
+		os.Exit(1)
+	}
+
+	return intRes
 }
 
 func Run(scanner *bufio.Scanner) (int, int) {
 	part1Result := 0
+	part2Result := 0
 	for scanner.Scan() {
 		batteryPack := scanner.Text()
 		part1Result += SolvePartOne(batteryPack)
+		part2Result += SolvePartTwo(batteryPack)
 	}
-	return part1Result, 0
+	return part1Result, part2Result
 }
 
 func main() {
