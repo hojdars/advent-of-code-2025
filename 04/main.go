@@ -27,7 +27,7 @@ func isPositionValid(pos coord, width int, height int) bool {
 	return true
 }
 
-func checkNeighbours(field []string, pos coord, width int, height int) bool {
+func checkNeighbours(field []string, pos coord, width int, height int) int {
 	total := 0
 	for _, neiCoord := range neighbours {
 		neighbour := coord{pos.x + neiCoord.x, pos.y + neiCoord.y}
@@ -41,21 +41,53 @@ func checkNeighbours(field []string, pos coord, width int, height int) bool {
 		}
 	}
 
-	return total < 4
+	return total
 }
 
-func SolvePartOne(field []string, width int, height int) (result int) {
+func SolvePartOne(field []string, width int, height int) (result int, toRemove []coord, heights [][]int) {
+	heights = make([][]int, height)
 	for x, row := range field {
+		heights[x] = make([]int, width)
 		for y, col := range row {
 			if col != '@' {
 				continue
 			}
 
-			if checkNeighbours(field, coord{x, y}, width, height) {
+			height := checkNeighbours(field, coord{x, y}, width, height)
+			heights[x][y] = height
+
+			if height < 4 {
+				toRemove = append(toRemove, coord{x, y})
 				result += 1
 			}
 		}
 	}
+	return
+}
+
+func SolvePartTwo(width int, height int, toRemove []coord, heights [][]int) (result int) {
+	result = 0
+
+	for len(toRemove) > 0 {
+		result += 1
+		current := toRemove[0]
+
+		for _, neiCoord := range neighbours {
+			neighbour := coord{current.x + neiCoord.x, current.y + neiCoord.y}
+
+			if !isPositionValid(neighbour, width, height) {
+				continue
+			}
+
+			heights[neighbour.x][neighbour.y] -= 1
+			if heights[neighbour.x][neighbour.y] == 3 {
+				toRemove = append(toRemove, neighbour)
+			}
+		}
+
+		toRemove = toRemove[1:]
+	}
+
 	return
 }
 
@@ -77,7 +109,10 @@ func Run(scanner *bufio.Scanner) (partOne int, partTwo int) {
 		height += 1
 	}
 
-	partOne += SolvePartOne(field, width, height)
+	res1, toRemove, heights := SolvePartOne(field, width, height)
+	partOne += res1
+
+	partTwo += SolvePartTwo(width, height, toRemove, heights)
 
 	return partOne, partTwo
 }
