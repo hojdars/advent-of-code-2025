@@ -9,33 +9,31 @@ import (
 	"strings"
 )
 
+func doOperation(data [][]string, pos int, initial int, op func(int, int) int) (result int) {
+	result = initial
+
+	for j := 0; j < len(data)-1; j++ {
+		conv, err := strconv.Atoi(data[j][pos])
+		if err != nil {
+			fmt.Printf("cannot convert data=%s", data[j][pos])
+			os.Exit(1)
+		}
+		result = op(result, conv)
+	}
+
+	return
+}
+
 func SolvePartOne(data [][]string) (result int) {
 	result = 0
 	signPos := len(data) - 1
 	for i := 0; i < len(data[0]); i++ {
-		if data[signPos][i] == "+" {
-			sumRes := 0
-			for j := 0; j < len(data)-1; j++ {
-				conv, err := strconv.Atoi(data[j][i])
-				if err != nil {
-					fmt.Printf("cannot convert data=%s", data[j][i])
-					os.Exit(1)
-				}
-				sumRes += conv
-			}
-			result += sumRes
-		} else if data[signPos][i] == "*" {
-			multRes := 1
-			for j := 0; j < len(data)-1; j++ {
-				conv, err := strconv.Atoi(data[j][i])
-				if err != nil {
-					fmt.Printf("cannot convert data=%s", data[j][i])
-					os.Exit(1)
-				}
-				multRes *= conv
-			}
-			result += multRes
-		} else {
+		switch data[signPos][i] {
+		case "+":
+			result += doOperation(data, i, 0, func(a, b int) int { return a + b })
+		case "*":
+			result += doOperation(data, i, 1, func(a, b int) int { return a * b })
+		default:
 			fmt.Printf("error: unexpected sign=%s\n", data[signPos][i])
 		}
 	}
